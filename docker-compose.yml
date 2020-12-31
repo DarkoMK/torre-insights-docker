@@ -1,0 +1,52 @@
+version: '3'
+services:
+  db:
+    image: mysql:5.7.22
+    container_name: mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - ./etc/mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: torre
+      MYSQL_USER: torre
+      MYSQL_PASSWORD: torre
+      MYSQL_ROOT_PASSWORD: torre
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - torre
+  api:
+    build:
+      context: .
+      dockerfile: .docker/api.dockerfile
+    ports:
+      - 8000:8000
+    expose:
+      - 8000
+    volumes:
+      - .:/var/www/api
+    working_dir: /var/www/api
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      - torre
+  app:
+    build:
+      context: .
+      dockerfile: .docker/app.dockerfile
+    ports:
+      - 80:80
+    volumes:
+      - .:/var/www/app
+    networks:
+      - torre
+networks:
+  torre:
+    driver: bridge
